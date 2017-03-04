@@ -101,9 +101,8 @@ class PyEd(Frame):
     l.config(text="")
 
   def settext(self):
-    with open(self.file, 'r+') as f:
-      txt = f.read()
-      self.text.insert('1.0', txt)
+    txt = self.read_file(self.file)
+    self.text.insert('1.0', txt)
 
   def quit(self, event=None):
     Frame.quit(self)
@@ -111,14 +110,21 @@ class PyEd(Frame):
   def save(self, event=None):
     txt = self.text.get('1.0', END+'-1c')
     if self.file:
-      with open(self.file, 'w') as f:
-        f.write(txt)
+      self.write_to_file(self.file, txt)
     else:
       self.file = asksaveasfilename()
-      with open(self.file, 'w') as f:
-        f.write(txt)
+      self.write_to_file(self.file, txt)
       self.master.title(self.file)
     self.update_status_msg("Saved")
+
+  def write_to_file(self, file, txt):
+    with open(file, 'w') as f:
+      f.write(txt)
+
+  def read_file(self, file):
+    with open(file, 'r+') as f:
+      txt = f.read()
+      return txt
 
   def cut(self):
     txt = self.text.get(SEL_FIRST, SEL_LAST)
