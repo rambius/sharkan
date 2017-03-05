@@ -40,9 +40,6 @@ class PyEd(Frame):
     self.pw.add(self.output)
 
     if file:
-      if not os.path.exists(file):
-        with open(file, 'w') as f:
-          pass
       self.master.title(file)
       self.file = file
       self.settext()
@@ -101,8 +98,9 @@ class PyEd(Frame):
     l.config(text="")
 
   def settext(self):
-    txt = self.read_file(self.file)
-    self.text.insert('1.0', txt)
+    if os.path.exists(self.file):
+      txt = self.read_file(self.file)
+      self.text.insert('1.0', txt)
 
   def quit(self, event=None):
     Frame.quit(self)
