@@ -109,12 +109,10 @@ class PyEd(Frame):
 
   def save(self, event=None):
     txt = self.text.get('1.0', END+'-1c')
-    if self.file:
-      self.write_to_file(self.file, txt)
-    else:
+    if not self.file:
       self.file = asksaveasfilename()
-      self.write_to_file(self.file, txt)
       self.master.title(self.file)
+    self.write_to_file(self.file, txt)
     self.update_status_msg("Saved")
 
   def write_to_file(self, file, txt):
