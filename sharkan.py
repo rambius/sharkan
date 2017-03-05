@@ -54,6 +54,7 @@ class PyEd(Frame):
     self.bind_all("<Control-s>", self.save)
     self.bind_all("<Control-q>", self.quit)
     self.bind_all("<F5>", self.run)
+    self.text.bind("<KeyPress>", self.update_pos)
 
   def makemenu(self):
     menubar = Frame(self)
@@ -85,8 +86,13 @@ class PyEd(Frame):
     statusbar.pack(side=BOTTOM)
     msg = Label(statusbar, name="msg")
     msg.pack(side=LEFT)
-    pos = Label(statusbar)
+    pos = Label(statusbar, name="pos")
     pos.pack(side=RIGHT)
+
+  def update_pos(self, event):
+    index = self.text.index(INSERT)
+    l = self.nametowidget("status.pos")
+    l.config(text=index)
 
   def update_status_msg(self, message):
     l = self.nametowidget("status.msg")
