@@ -30,7 +30,8 @@ class PyEd(Frame):
 
   def __init__(self, file=None, parent=None):
     Frame.__init__(self, parent, name="base")
-    self.makemenu()
+    self.file = file
+    self.make_menu()
 
     self.pw = PanedWindow(self, orient=VERTICAL)
     self.pw.pack(side=TOP, expand=YES)
@@ -39,13 +40,11 @@ class PyEd(Frame):
     self.output = Text(self.pw)
     self.pw.add(self.output)
 
-    if file:
-      self.master.title(file)
-      self.file = file
+    if self.file:
+      self.master.title(self.file)
       self.settext()
     else:
       self.master.title("Untitled")
-      self.file = None
     self.text.focus()
 
     self.makestatus()
@@ -53,10 +52,9 @@ class PyEd(Frame):
 
     self.bind_all("<Control-s>", self.save)
     self.bind_all("<Control-q>", self.quit)
-    self.bind_all("<F5>", self.run)
     self.text.bind("<KeyPress>", self.update_pos)
 
-  def makemenu(self):
+  def make_menu(self):
     menubar = Frame(self)
     menubar.pack(side=TOP)
 
@@ -75,11 +73,18 @@ class PyEd(Frame):
     edit.add_command(label='Paste', command=self.paste)
     editbtn.config(menu=edit)
 
-    runbtn = Menubutton(menubar, text='Run')
-    runbtn.pack(side=LEFT)
-    run = Menu(runbtn, tearoff=0)
-    run.add_command(label='Run', command=self.run, accelerator="F5")
-    runbtn.config(menu=run)
+    if self.file:
+      self.make_file_type_menu(menubar)
+
+  def make_file_type_menu(self, menubar):
+    _, ext = os.path.splitext(self.file)
+    if ext == ".py":
+      runbtn = Menubutton(menubar, text='Python')
+      runbtn.pack(side=LEFT)
+      run = Menu(runbtn, tearoff=0)
+      run.add_command(label='Run', command=self.run_python, accelerator="F5")
+      runbtn.config(menu=run)
+      self.bind_all("<F5>", self.run_python)
 
   def makestatus(self):
     statusbar = Frame(self, name="status")
@@ -143,7 +148,7 @@ class PyEd(Frame):
     txt = self.selection_get(selection='CLIPBOARD')
     self.text.insert(INSERT, txt)
 
-  def run(self, event=None):
+  def run_python(self, event=None):
     p = subprocess.run([sys.executable, self.file], 
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE) 
@@ -159,10 +164,7 @@ def main():
                       default=None)
   args = parser.parse_args()
   root = Tk()
-  if args.file:
-    pyed = PyEd(parent=root, file=args.file)
-  else:
-    pyed = PyEd(parent=root)
+  pyed = PyEd(parent=root, file=args.file)
   pyed.pack()
   root.mainloop() 
 
