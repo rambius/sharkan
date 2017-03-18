@@ -2,6 +2,8 @@
 
 import argparse
 import os.path
+import py_compile
+import re
 import subprocess
 import sys
 from tkinter import BOTH
@@ -79,11 +81,13 @@ class PyEd(Frame):
   def make_file_type_menu(self, menubar):
     _, ext = os.path.splitext(self.file)
     if ext == ".py":
-      runbtn = Menubutton(menubar, text='Python')
-      runbtn.pack(side=LEFT)
-      run = Menu(runbtn, tearoff=0)
-      run.add_command(label='Run', command=self.run_python, accelerator="F5")
-      runbtn.config(menu=run)
+      pybtn = Menubutton(menubar, text='Python')
+      pybtn.pack(side=LEFT)
+      py = Menu(pybtn, tearoff=0)
+      py.add_command(label='Compile', command=self.compile_python, accelerator="Ctrl+F5")
+      py.add_command(label='Run', command=self.run_python, accelerator="F5")
+      pybtn.config(menu=py)
+      self.bind_all("<Control-F5>", self.compile_python)
       self.bind_all("<F5>", self.run_python)
 
   def makestatus(self):
@@ -155,6 +159,16 @@ class PyEd(Frame):
     self.output.insert('end', p.stdout)
     self.output.insert('end', p.stderr)
     self.output.see(END)
+
+  def compile_python(self, event=None):
+    try:
+      py_compile.compile(self.file, doraise=True)
+      self.output.insert('end', "%s compiled successfully\n" % self.file)
+    except py_compile.PyCompileError as pyce:
+      lere = re.compile('\s*File \".*\", line(\d*)')
+      r = lere.match(pyce.msg)
+      lineno = r.group(1)
+      print(lineno)
 
 def main():
   parser = argparse.ArgumentParser(description="Text Editor")
