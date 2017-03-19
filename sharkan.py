@@ -58,10 +58,10 @@ class PyEd(Frame):
     self.text.bind("<KeyPress>", self.update_pos)
 
   def make_menu(self):
-    menubar = Frame(self)
-    menubar.pack(side=TOP)
+    self.menubar = Frame(self)
+    self.menubar.pack(side=TOP)
 
-    filebtn = Menubutton(menubar, text='File')
+    filebtn = Menubutton(self.menubar, text='File')
     filebtn.pack(side=LEFT)
     file = Menu(filebtn, tearoff=0)
     file.add_command(label='New', command=self.new, accelerator="Ctrl+N")
@@ -69,7 +69,7 @@ class PyEd(Frame):
     file.add_command(label='Quit', command=self.quit, accelerator="Ctrl+Q")
     filebtn.config(menu=file)
 
-    editbtn = Menubutton(menubar, text='Edit')
+    editbtn = Menubutton(self.menubar, text='Edit')
     editbtn.pack(side=LEFT)
     edit = Menu(editbtn, tearoff=0)
     edit.add_command(label='Cut', command=self.cut)
@@ -78,12 +78,13 @@ class PyEd(Frame):
     editbtn.config(menu=edit)
 
     if self.file:
-      self.make_file_type_menu(menubar)
+      self.make_file_type_menu(self.menubar)
 
   def make_file_type_menu(self, menubar):
-    _, ext = os.path.splitext(self.file)
-    if ext == ".py":
-      pybtn = Menubutton(menubar, text='Python')
+    _, e = os.path.splitext(self.file)
+    ext = e[1:]
+    if ext == "py":
+      pybtn = Menubutton(menubar, text='Python', name=ext)
       pybtn.pack(side=LEFT)
       py = Menu(pybtn, tearoff=0)
       py.add_command(label='Compile', command=self.compile_python, accelerator="Ctrl+F5")
@@ -91,8 +92,8 @@ class PyEd(Frame):
       pybtn.config(menu=py)
       self.bind_all("<Control-F5>", self.compile_python)
       self.bind_all("<F5>", self.run_python)
-    elif ext == ".tcl":
-      tclbtn = Menubutton(menubar, text='TCL')
+    elif ext == "tcl":
+      tclbtn = Menubutton(menubar, text='TCL', name=ext)
       tclbtn.pack(side=LEFT)
       tcl = Menu(tclbtn, tearoff=0)
       tcl.add_command(label='Run', command=self.run_tcl, accelerator="F5")
@@ -134,13 +135,19 @@ class PyEd(Frame):
     if not self.file:
       self.file = asksaveasfilename()
       self.master.title(self.file)
+      self.make_file_type_menu(self.menubar)
     self.write_to_file(self.file, txt)
     self.update_status_msg("Saved")
 
   def new(self, event=None):
-      self.file = asksaveasfilename()
-      self.master.title(self.file)
-      self.text.delete('1.0', END)
+    _, e = os.path.splitext(self.file)
+    ext = e[1:]
+    b = self.menubar.children.get(ext)
+    if b:
+      b.destroy()
+    self.file = None
+    self.master.title("Untitled")
+    self.text.delete('1.0', END)
 
   def write_to_file(self, file, txt):
     with open(file, 'w') as f:
