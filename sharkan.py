@@ -52,6 +52,7 @@ class PyEd(Frame):
     self.makestatus()
     self.update_status_msg("Welcome")
 
+    self.bind_all("<Control-n>", self.new)
     self.bind_all("<Control-s>", self.save)
     self.bind_all("<Control-q>", self.quit)
     self.text.bind("<KeyPress>", self.update_pos)
@@ -137,7 +138,9 @@ class PyEd(Frame):
     self.update_status_msg("Saved")
 
   def new(self, event=None):
-    pass
+      self.file = asksaveasfilename()
+      self.master.title(self.file)
+      self.text.delete('1.0', END)
 
   def write_to_file(self, file, txt):
     with open(file, 'w') as f:
