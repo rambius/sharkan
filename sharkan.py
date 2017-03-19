@@ -63,6 +63,7 @@ class PyEd(Frame):
     filebtn = Menubutton(menubar, text='File')
     filebtn.pack(side=LEFT)
     file = Menu(filebtn, tearoff=0)
+    file.add_command(label='New', command=self.new, accelerator="Ctrl+N")
     file.add_command(label='Save', command=self.save, accelerator="Ctrl+S")
     file.add_command(label='Quit', command=self.quit, accelerator="Ctrl+Q")
     filebtn.config(menu=file)
@@ -89,6 +90,13 @@ class PyEd(Frame):
       pybtn.config(menu=py)
       self.bind_all("<Control-F5>", self.compile_python)
       self.bind_all("<F5>", self.run_python)
+    elif ext == ".tcl":
+      tclbtn = Menubutton(menubar, text='TCL')
+      tclbtn.pack(side=LEFT)
+      tcl = Menu(tclbtn, tearoff=0)
+      tcl.add_command(label='Run', command=self.run_tcl, accelerator="F5")
+      tclbtn.config(menu=tcl)
+      self.bind_all("<F5>", self.run_tcl)
 
   def makestatus(self):
     statusbar = Frame(self, name="status")
@@ -127,6 +135,9 @@ class PyEd(Frame):
       self.master.title(self.file)
     self.write_to_file(self.file, txt)
     self.update_status_msg("Saved")
+
+  def new(self, event=None):
+    pass
 
   def write_to_file(self, file, txt):
     with open(file, 'w') as f:
@@ -169,6 +180,14 @@ class PyEd(Frame):
       r = lere.match(pyce.msg)
       lineno = r.group(1)
       print(lineno)
+
+  def run_tcl(self, event=None):
+    p = subprocess.run(["tclsh8.7", self.file],
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+    self.output.insert('end', p.stdout)
+    self.output.insert('end', p.stderr)
+    self.output.see(END)
 
 def main():
   parser = argparse.ArgumentParser(description="Text Editor")
